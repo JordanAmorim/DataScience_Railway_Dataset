@@ -30,7 +30,7 @@ import scipy.io
 from os import listdir
 from os import mkdir
 import pandas as pd
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 """Pasta de origem dos dados e pasta de destino para os dados trabalhados"""
 path_sources = r'C:\Users\vinic\python_projects\monitoracao_project\dados'
@@ -63,7 +63,7 @@ for i in range(len(path_sources)):
         l = path_sour+'\\'+j
         m = path_dest+'\\'+j
 
-        
+
 
         try:
             with h5py.File(l, 'r') as f:
