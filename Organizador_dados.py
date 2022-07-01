@@ -21,7 +21,20 @@ running direction: 1 - outbound
 		   2 - inbound
 
  """ 
-#from gettext import install
+
+
+"""
+Serão criados 4 Datasets, cada um correspondente aos trens e aos tipos de dados:
+
+LRV4306_Acelleration
+LRV4306_GPS
+
+LRV4313_Acelleration
+LRV4313_GPS
+
+Cada um terá 4 índices: date, daily passing, running direction, sensor channel
+Tendo como resposta 1 colunas: value (valor numérico das colunas)
+"""
 
 
 import h5py
@@ -37,12 +50,10 @@ path_sources = r'C:\Users\vinic\python_projects\monitoracao_project\dados'
 path_destiny = r'C:\Users\vinic\python_projects\monitoracao_project\dados_parquet'
 
 folders = listdir(path_sources)
+# folders = [folders[0]] # teste com uma pasta só
 # print(folders)
 
 errors = [] # Guarda qualquer arquivo que falhou em ser carregado
-
-acel_props = 'date_root index_daily passing_region_running direction_sensor channel'.split('_')
-gps_props = 'date_root index_daily passing_region_running direction'.split('_')
 
 for i in range(len(path_sources)):
 
@@ -52,38 +63,79 @@ for i in range(len(path_sources)):
     mkdir(path_dest) # cria pastas de acordo com o nome da pasta de origem
     files = listdir(path_sour)
 
-    if 'acel' in path_sources[i]:
-        datas = pd.DataFrame(acel_props)
+    multi_index = []
 
-    elif 'gps' in path_sources[i]:
-        datas = pd.DataFrame(gps_props)
+    for j in files:
+        props = j.split('_')
+
+        if 'accel' in path_sources[i]:
+            multi_index.append([props[1], props[3], props[5], props[6]])
+
+        elif 'gps' in path_sources[i]:
+            multi_index.append([props[1], props[3], props[5], '1'])
+            multi_index.append([props[1], props[3], props[5], '2'])
+            multi_index.append([props[1], props[3], props[5], '3'])
+            multi_index.append([props[1], props[3], props[5], '4'])
+            multi_index.append([props[1], props[3], props[5], '5'])
+
+
+    alldatas = pd.DataFrame(multi_index, columns=['value'],)
 
     for j in files:
 
         l = path_sour+'\\'+j
         m = path_dest+'\\'+j
 
-
-
         try:
             with h5py.File(l, 'r') as f:
-                data = f.get('save_var')
-                data = pd.DataFrame(np.asarray(data).T)
-                datas[j]=data
+                data = np.assaray(f.get('save_var')).T
+                #data = pd.DataFrame(np.asarray(data).T)
+                #datas[j]=data
                 #data.to_csv(m[:-4]+'.csv', index=False, header=False)
+
+                if 'accel' in path_sources[i]:
+                    alldatas[props[1], props[3], props[5], props[6]] = data
+
+                elif 'gps' in path_sources[i]:
+                    alldatas[props[1], props[3], props[5], '1'] = data[:, 0]
+                    alldatas[props[1], props[3], props[5], '2'] = data[:, 1]
+                    alldatas[props[1], props[3], props[5], '3'] = data[:, 2]
+                    alldatas[props[1], props[3], props[5], '4'] = data[:, 3]
+                    alldatas[props[1], props[3], props[5], '5'] = data[:, 4]
+        
         except:
             try:
                 data = scipy.io.loadmat(l)
-                data = pd.DataFrame(data[list(data.keys())[-1]])
-                datas[j]=data
+                data = np.assarray(data[list(data.keys())[-1]])
+                # datas[j]=data
                 #data.to_csv(m[:-4]+'.csv', index=False, header=False)
+
+                if 'accel' in path_sources[i]:
+                    alldatas[props[1], props[3], props[5], props[6]] = data
+
+                elif 'gps' in path_sources[i]:
+                    alldatas[props[1], props[3], props[5], '1'] = data[:, 0]
+                    alldatas[props[1], props[3], props[5], '2'] = data[:, 1]
+                    alldatas[props[1], props[3], props[5], '3'] = data[:, 2]
+                    alldatas[props[1], props[3], props[5], '4'] = data[:, 3]
+                    alldatas[props[1], props[3], props[5], '5'] = data[:, 4]
                 
             except:
-                errors.append(l)   
+                errors.append(l)  
+
+    alldatas.to_parquet(path_dest)
 
 
+"""
 for j in range(datas[list(datas.keys())[0]].shape[1]):
     for i in range(len(datas.keys())):
         plt.plot(datas[list(datas.keys())[i]][j])
     plt.suptitle(f'type:{folders[0]}; column:{j}')
     plt.show()
+
+
+
+
+x = pd.DataFrame(index=['x', 'y'])
+x['x','z']=np.array([2, 3, 5])
+"""
