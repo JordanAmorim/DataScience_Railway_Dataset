@@ -57,6 +57,8 @@ errors = [] # Guarda qualquer arquivo que falhou em ser carregado
 
 for i in range(len(path_sources)):
 
+    df = pd.Dataframe(index=['Data', 'Direção', 'Viagem', 'N° sensor', 'Chave'])
+
     path_sour = path_sources+'\\'+folders[1]
     path_dest = path_destiny+'\\'+folders[1]
 
