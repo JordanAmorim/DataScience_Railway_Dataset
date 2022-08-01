@@ -22,10 +22,23 @@ path = r'C:\Users\vinic\python_projects\monitoracao_project\dados_parquet'
 
 ace_data = pd.read_parquet(path+r'\LRV4306_acc-001.parquet')
 gps_data = pd.read_parquet(path+r'\LRV4306_gps.parquet')
+gps_reference_in = pd.read_csv(path+r'\region5_inbound.csv', header=None)
+gps_reference_out = pd.read_csv(path+r'\region5_outbound.csv', header=None)
 
 
 
 #%% Funções
+
+# Dynamic time warping
+
+def DynamicTimeWarping(referencia, gps):
+    #retorna os vetores alinhados
+    # https://dtwalign.readthedocs.io/en/latest/tutorial.html
+
+    res = dtw(gps, referencia)
+    return gps[res.get_warping_path(target="query")]
+    
+
 
 # Transformando coordenadas em distância
 
@@ -45,15 +58,6 @@ def Distancias(data, n_passagens, direcao, gps_data):
 
     return dists
 
-# Dynamic time warping
-
-def DynamicTimeWarping(referencia, gps):
-    #retorna os vetores alinhados
-    # https://dtwalign.readthedocs.io/en/latest/tutorial.html
-
-    res = dtw(gps, referencia)
-    return res.get_warping_path(target="query")
-    
 
 
 # Velocidade
@@ -61,6 +65,7 @@ def DynamicTimeWarping(referencia, gps):
 def Velocidade(distancias, tempos):
     velocidades = distancias/tempos
     return velocidades
+
 
 
 # Fazendo o upsampling
@@ -77,10 +82,9 @@ def InterpoladorVelocidade(distancias, mult):
 
 
 
-
 # %% Teste DWT
 
-np.random.seed(1234)
+"""np.random.seed(1234)
 # generate toy data
 x = np.sin(2 * np.pi * 3.1 * np.linspace(0, 1, 101))
 x += np.random.rand(x.size)
@@ -102,47 +106,41 @@ x_warping_path = res.get_warping_path(target="query")
 plt.plot(x[x_warping_path], label="aligned query to reference")
 plt.plot(y, label="reference")
 plt.legend()
-plt.ylim(-1, 3)
+plt.ylim(-1, 3)"""
 
 
 
 #%% Carregando os dados por datas, n_passagens, direcao
 
+# O que devemos fazer?
+
+# valores de gps
+# valores corrigidos de gps
+# definir a distância
+# função(distância, aceleração)
+# machine learning
+
+
 datas = set(gps_data.loc[:,'date'])
 n_passagens = set(gps_data.loc[:,'daily_passing'])
 direcoes = set(gps_data.loc[:,'running_direction'])
 
-
 for p in datas:
     for q in n_passagens:
         for r in direcoes:
-
-            df_temp = pd.DataFrame(columns = ['latitude', 'longitude', 'altura'])
-            linhas_chave = (Chaves.loc[:,['Data', 'N Passagens', 'Direcao']]==[p, q, r]).all(axis=1)
-
-            for t in range(len(linhas_chave)):
-
-                    if linhas_chave.iloc[t]:
-
-                        m = Chaves.loc[t, 'Chave']
-
-                        try:
-                            with h5py.File(m, 'r') as f:
-                                arq_carregado = np.asarray(f.get('save_var')).T                                    
-                        except:
-                            try:
-                                arq_carregado = scipy.io.loadmat(m)
-                                arq_carregado = np.asarray(arq_carregado[list(arq_carregado.keys())[-1]])
-                                
-                            except:
-                                errors.append(m) 
-
-                        df_temp['Data'] = arq_carregado[:,0]
-
-                        df_temp['N Passagens'] = arq_carregado[:,1]
-
-                        df_temp['Direcao'] = arq_carregado[:,2]
+            
+            #valor_gps = ((gps_data.loc['date']==p).loc['daily_passing']==q).loc['running_direction'==r]
+            valor_gps = (gps_data.loc[:,['date', 'daily_passing', 'running_direction']]==[p, q, r])
 
                         # Tratar dados
 
                         # treinar modelo de machine learning
+
+
+#%% O que devemos fazer
+
+# valores de gps
+# valores corrigidos de gps
+# definir a distância
+# função(distância, aceleração)
+# machine learning
