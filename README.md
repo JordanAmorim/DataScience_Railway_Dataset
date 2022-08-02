@@ -63,3 +63,5 @@ Com os dados dos sensores dispostos da seguinte forma:
 ## Tratamento de Dados
 
 ## Próximos Passos
+=======
+## Extração dos dados
