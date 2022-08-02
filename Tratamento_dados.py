@@ -129,9 +129,29 @@ for p in datas:
     for q in n_passagens:
         for r in direcoes:
             
-            #valor_gps = ((gps_data.loc['date']==p).loc['daily_passing']==q).loc['running_direction'==r]
             valor_gps = (gps_data.loc[:,['date', 'daily_passing', 'running_direction']]==[p, q, r])
+            valor_gps_corrigido = deepcopy(valor_gps)
 
+            if direcoes == 1:
+                valor_gps_corrigido.iloc[:,0] = \
+                    DynamicTimeWarping(gps_reference_out.iloc[:, 2], valor_gps[:, 0])
+    
+                valor_gps_corrigido.iloc[:,1] = \
+                    DynamicTimeWarping(gps_reference_out.iloc[:, 1], valor_gps[:, 1])
+
+            else:
+                valor_gps_corrigido.iloc[:,0] = \
+                    DynamicTimeWarping(gps_reference_in.iloc[:, 2], valor_gps[:, 0])
+    
+                valor_gps_corrigido.iloc[:,1] = \
+                    DynamicTimeWarping(gps_reference_in.iloc[:, 1], valor_gps[:, 1])
+            
+            
+            distancias = Distancias(p, q, r, valor_gps_corrigido)
+
+            mult = round(len(gps_data.iloc[:, 0])/len(ace_data.iloc[:,0]))
+            distancias_up = InterpoladorVelocidade(distancias, mult)            
+                    
                         # Tratar dados
 
                         # treinar modelo de machine learning
