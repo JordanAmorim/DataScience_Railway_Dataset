@@ -125,26 +125,30 @@ datas = set(gps_data.loc[:,'date'])
 n_passagens = set(gps_data.loc[:,'daily_passing'])
 direcoes = set(gps_data.loc[:,'running_direction'])
 
+"""p = list(datas)[0]
+q = list(n_passagens)[0]
+r = list(direcoes)[0]"""
+
 for p in datas:
     for q in n_passagens:
         for r in direcoes:
             
-            valor_gps = (gps_data.loc[:,['date', 'daily_passing', 'running_direction']]==[p, q, r])
+            valor_gps = gps_data.loc[(gps_data.loc[:,['date', 'daily_passing', 'running_direction']]==[p, q, r]).all(axis=1),:]
             valor_gps_corrigido = deepcopy(valor_gps)
 
-            if direcoes == 1:
+            if r == 1:
                 valor_gps_corrigido.iloc[:,0] = \
-                    DynamicTimeWarping(gps_reference_out.iloc[:, 2], valor_gps[:, 0])
+                    DynamicTimeWarping(gps_reference_out.iloc[:, 2], valor_gps.iloc[:, 0])
     
                 valor_gps_corrigido.iloc[:,1] = \
-                    DynamicTimeWarping(gps_reference_out.iloc[:, 1], valor_gps[:, 1])
+                    DynamicTimeWarping(gps_reference_out.iloc[:, 1], valor_gps.iloc[:, 1])
 
             else:
                 valor_gps_corrigido.iloc[:,0] = \
-                    DynamicTimeWarping(gps_reference_in.iloc[:, 2], valor_gps[:, 0])
+                    DynamicTimeWarping(gps_reference_in.iloc[:, 2], valor_gps.iloc[:, 0])
     
                 valor_gps_corrigido.iloc[:,1] = \
-                    DynamicTimeWarping(gps_reference_in.iloc[:, 1], valor_gps[:, 1])
+                    DynamicTimeWarping(gps_reference_in.iloc[:, 1], valor_gps.iloc[:, 1])
             
             
             distancias = Distancias(p, q, r, valor_gps_corrigido)
