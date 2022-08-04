@@ -1,9 +1,6 @@
 # %% Importações
 
 from copy import deepcopy
-import os
-import pickle
-import sys
 from matplotlib import markers
 
 from tqdm import tqdm
@@ -20,7 +17,7 @@ import matplotlib.pyplot as plt
 
 path = r'C:\Users\vinic\python_projects\monitoracao_project\dados_parquet'
 
-ace_data = pd.read_parquet(path+r'\LRV4306_acc-001.parquet')
+#ace_data = pd.read_parquet(path+r'\LRV4306_acc-001.parquet')
 gps_data = pd.read_parquet(path+r'\LRV4306_gps.parquet')
 gps_reference_in = pd.read_csv(path+r'\region5_inbound.csv', header=None)
 gps_reference_out = pd.read_csv(path+r'\region5_outbound.csv', header=None)
@@ -55,7 +52,7 @@ def Distancias(coordenadas):
 
     n = len(coordenadas.iloc[:, 0])
     dists = []
-    for i in range(n-1):
+    for i in tqdm(range(n-1)):
         coords_1 = (coordenadas.iloc[i, 0], coordenadas.iloc[i, 1])
         coords_2 = (coordenadas.iloc[i+1, 0], coordenadas.iloc[i+1, 1])
         dists.append(geopy.distance.geodesic(coords_1, coords_2).km)
@@ -84,10 +81,10 @@ def Interpolador(distancias, n_final):
 def AntiInterpolador(distancias_nova, mult):
     distancias_antiga = []
     n = len(distancias_nova)
-    for i in range(n):
+    for i in tqdm(range(n)):
         if i % (mult+1) == 0:
             try:
-                distancias_antiga.append(distancias_nova[i])
+                distancias_antiga.append(distancias_nova.iloc[i])
             except:
                 distancias_antiga.append(distancias_nova.iloc[i])
     return distancias_antiga
@@ -152,6 +149,7 @@ for p in datas:
                     z = DynamicTimeWarping(x, y, True)
                     valor_gps_corrigido.iloc[:, 1] = AntiInterpolador(z, mult)
 
+"""
                 distancias = Distancias(valor_gps_corrigido)
 
                 valor_ace = ace_data.loc[(ace_data.loc[:, [
@@ -164,57 +162,64 @@ for p in datas:
 
                 # Tratar dados
 
-                # treinar modelo de machine learning
+                # treinar modelo de machine learning"""
 
 
 # %% teste
 
 
-datas = set(gps_data.loc[:, 'date'])
+"""datas = set(gps_data.loc[:, 'date'])
 n_passagens = set(gps_data.loc[:, 'daily_passing'])
 direcoes = set(gps_data.loc[:, 'running_direction'])
 
 p = list(datas)[0]
 q = list(n_passagens)[0]
-r = list(direcoes)[0]
+r = list(direcoes)[0]"""
 
 
 valor_gps = gps_data.loc[(gps_data.loc[:, [
-                          'date', 'daily_passing', 'running_direction']] == [p, q, r]).all(axis=1), :]
+                                      'date', 'daily_passing', 'running_direction']] == [p, q, r]).all(axis=1), :]
 valor_gps_corrigido = deepcopy(valor_gps)
 
 if len(valor_gps.iloc[:, 0]) > 50:
     if r == 1:
 
         y = gps_reference_out.iloc[:, 2]
-        x = np.asarray(Interpolador(
-            list(valor_gps.iloc[:, 0]), len(list(y)))[0])
-        valor_gps_corrigido.iloc[:, 0] = DynamicTimeWarping(x, y, True)
+        x, mult = np.asarray(Interpolador(list(valor_gps.iloc[:, 0]), len(y)))
+        x = np.asarray(x)
+        z = DynamicTimeWarping(x, y, True)
+        valor_gps_corrigido.iloc[:, 0] = AntiInterpolador(z, mult)
 
         y = gps_reference_out.iloc[:, 1]
-        x = np.asarray(Interpolador(
-            list(valor_gps.iloc[:, 1]), len(list(y)))[0])
-        valor_gps_corrigido.iloc[:, 1] = DynamicTimeWarping(x, y)
+        x, mult = np.asarray(Interpolador(
+            list(valor_gps.iloc[:, 1]), len(y)))
+        x = np.asarray(x)
+        z = DynamicTimeWarping(x, y, True)
+        valor_gps_corrigido.iloc[:, 1] = AntiInterpolador(z, mult)
 
     else:
         y = gps_reference_in.iloc[:, 2]
-        x = np.asarray(Interpolador(
-            list(valor_gps.iloc[:, 0]), len(list(y)))[0])
-        valor_gps_corrigido.iloc[:, 0] = DynamicTimeWarping(x, y)
+        x, mult = np.asarray(Interpolador(
+            list(valor_gps.iloc[:, 0]), len(y)))
+        x = np.asarray(x)
+        z = DynamicTimeWarping(x, y, True)
+        valor_gps_corrigido.iloc[:, 0] = AntiInterpolador(z, mult)
 
         y = gps_reference_in.iloc[:, 1]
-        x = np.asarray(Interpolador(
-            list(valor_gps.iloc[:, 1]), len(list(y)))[0])
-        valor_gps_corrigido.iloc[:, 1] = DynamicTimeWarping(x, y)
+        x, mult = np.asarray(Interpolador(
+            list(valor_gps.iloc[:, 1]), len(y)))
+        x = np.asarray(x)
+        z = DynamicTimeWarping(x, y, True)
+        valor_gps_corrigido.iloc[:, 1] = AntiInterpolador(z, mult)
 
-    distancias = Distancias(p, q, r, valor_gps_corrigido)
 
-    mult = round(len(gps_data.iloc[:, 0])/len(ace_data.iloc[:, 0]))
-    distancias_up = Interpolador(distancias, mult)
+"""    distancias = Distancias(valor_gps_corrigido)
 
-    # Tratar dados
+    valor_ace = ace_data.loc[(ace_data.loc[:, [
+                                'date', 'daily_passing', 'running_direction']] == [p, q, r]).all(axis=1), :]
 
-    # treinar modelo de machine learning
+    mult = len(ace_data.iloc[:, 0])
+    distancias_up = Interpolador(distancias, mult)"""
 
 
 # %% Teste função dtw
@@ -225,11 +230,37 @@ if len(valor_gps.iloc[:, 0]) > 50:
 
 #x = gps_reference_out.iloc[:, 2]
 #y = np.asarray(Interpolador(list(valor_gps.iloc[:, 0]), len(list(x))))
-z = DynamicTimeWarping(x, y, True)
+"""z = DynamicTimeWarping(x, y, True)
 
 plt.plot(x, label='GPS antigo', markers='x')
 plt.plot(y, label='Referencia', markers='y')
-plt.plot(z, label='GPS alinhado', markers='s')
+plt.plot(z, label='GPS alinhado', markers='s')"""
+
+
+# Alinhado
+
+l = 'Alinhado'
+x = list(valor_gps_corrigido.iloc[:,0])
+y = list(valor_gps_corrigido.iloc[:,1])
+plt.plot(x, y, label=l)
+
+# Referencia
+l = 'Referência'
+x = list(gps_reference_out.iloc[:, 2])
+y = list(gps_reference_out.iloc[:, 1])
+plt.plot(x, y, label=l)
+
+# antigo
+
+l = 'Não alinhado'
+x = list(valor_gps.iloc[:,0])
+y = list(valor_gps.iloc[:,1])
+plt.plot(x, y , label=l)
+
+
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.suptitle('Percurso Não Alinhado vs Alinhado vs Referência')
 plt.legend()
 plt.show()
 # %%
