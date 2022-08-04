@@ -28,7 +28,7 @@ Apenas dados da Região 5 - demonstrada no mapa -  foram utilizados. Buscando me
 
 ![](https://github.com/JordanAmorim/DataScience_Railway_Dataset/blob/main/docs/LRV-regions.jpg)
 
-Não é possível fazer download diretamente pelo site, uma vez que os arquivos excedem o tamanho disponível pela plataforma. Portanto, foi criado atalho do repositório no computador e utilizado programa [Extraction_data]("Link do arquivo de extração"). 
+Não é possível fazer download diretamente pelo site, uma vez que os arquivos excedem o tamanho disponível pela plataforma. Portanto, foi criado atalho do repositório no computador e utilizado programa [Extraction_data](https://github.com/JordanAmorim/DataScience_Railway_Dataset/blob/main/Extraction_data.ipynb). 
 
 No programa, deve-se alterar o caminho para a pasta que contém o atalho dos arquivos
 
@@ -62,6 +62,35 @@ Com os dados dos sensores dispostos da seguinte forma:
 
 ## Tratamento de Dados
 
+Para tratamento dos dados, é utilizado o programa [Tratamento_dados](https://github.com/JordanAmorim/DataScience_Railway_Dataset/blob/main/Tratamento_dados.ipynb). Nele, deve ser novamente apontado o caminho para os dados já extraídos. As etapas que deveriam seguir neste tratamento são:
+
+### Alinhamento do trajeto
+
+Neste passo, uma rota de referência da linha 5 foi usada e os dados da trajetoria real são aproximados até esta trajetória. Para isso é feito:
+ - Separação em eixos y e x (coordenadas Latidudinais e Longitudinais);
+ - Redução dos dados de GPS pela função Interpolador (pois as coordenadas de referência possuem menos dados);
+ - Alinhamento da trajetória em x e y por meio da função DynamicTimeWarping;
+ - Retorno dos dados para a quantidade original pela função AntiInterpolador
+ - Plot das coordenadas y e x (coordenadas Latidudinais e Longitudinais) para conferência.
+
+Entretanto, possívelmente pelo grande tamanho dos dados existentes, quando utilizado para toda a gama de dados extraídos, não foi possível por meio de nosso programa, alinhar as trajetórias para todas as viagens, sendo possível apenas alinhar o trajeto em uma viagem escolhida. O resultado da conferência deste alinhamento é exibido abaixo:
+
+![](https://github.com/JordanAmorim/DataScience_Railway_Dataset/blob/main/docs/trajeto-e-correcao.jpeg)
+
+A trajetórias percorrida e exibida neste gráfico são muito próximas da referência. Por este motivo, não é possível verificar grandes variações entre elas e a trajetória corrigida.
+
+### Transformação das Coordenadas
+
+Posteriormente, deveriam ser utilizadas as distâncias ponto a ponto das coordenadas de GPS para trazer uma real distância percorrida. Para isso,  foi criada a função Distancias. Infelizmente o código apresentou Bugs e não foi possível utilizá-lo.
+
+### Integração com Sensores
+
+Já com as distâncioas corrigidas, devem ser integrados os valores da tabela de sensores com as reais distâncias corrigidas. Dessa forma é possível relacionar o os valores dos acelerometros com o trecho da ferrovia em que estas medições foram obtidas. 
+
 ## Próximos Passos
-=======
-## Extração dos dados
+
+Com estes dados em mãos, os próximos passos seriam:
+
+- Pré processamento dos dados, relacioná-los com as respostas esperadas;
+- Trazer as respostas esperadas com base nos dados de manutenção da via disponíveis;
+- Executar o aprendizado de máquina, buscando a melhor relação dos sensores que prediz necessidade de manutenção na via.
